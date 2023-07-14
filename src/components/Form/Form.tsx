@@ -29,7 +29,8 @@ const Form = (props: FormProps) => {
 		getFormValues,
 		handleDialogClose,
 		tooltipInfo,
-		showActive
+		showActive,
+		control
 	} = props;
 
 	const sectionsRef = useRef<HTMLDivElement[]>([]);
@@ -249,6 +250,7 @@ const Form = (props: FormProps) => {
 										fields={fields}
 										sections={sections}
 										view={view}
+										control={control}
 									/>
 								</FormContent>
 							</Row>
@@ -261,6 +263,7 @@ const Form = (props: FormProps) => {
 									fields={fields}
 									sections={sections}
 									view={view}
+									control={control}
 								/>
 							</FormContent>
 						)}

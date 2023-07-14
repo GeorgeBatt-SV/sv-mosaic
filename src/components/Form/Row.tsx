@@ -3,6 +3,7 @@ import theme from "@root/theme";
 import * as React from "react";
 import { memo } from "react";
 import styled from "styled-components";
+import { Control } from "react-hook-form"
 
 // Components
 import Col from "./Col";
@@ -19,10 +20,11 @@ interface RowPropTypes {
 	dispatch: any;
 	rowIdx?: number;
 	sectionIdx?: number;
+	control?: Control;
 }
 
 const Row = (props: RowPropTypes) => {
-	const { row, rowIdx, state, fieldsDef, dispatch, sectionIdx } = props;
+	const { row, rowIdx, state, fieldsDef, dispatch, sectionIdx, control } = props;
 
 	return (
 		<StyledRow>
@@ -38,6 +40,7 @@ const Row = (props: RowPropTypes) => {
 						fieldsDef={fieldsDef}
 						dispatch={dispatch}
 						colsInRow={row.length}
+						control={control}
 					/>
 				)
 			})}

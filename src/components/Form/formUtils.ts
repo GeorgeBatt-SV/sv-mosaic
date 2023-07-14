@@ -1,6 +1,7 @@
 import { MosaicObject } from "@root/types";
 import { useRef, useCallback, useReducer, Dispatch } from "react";
 import { SectionDef } from "./FormTypes";
+import { useForm as useFormHook } from "react-hook-form"
 
 type State = {
 	data: MosaicObject<any>;
@@ -145,6 +146,12 @@ export function useForm(): UseFormReturn {
 	);
 
 	return { state, dispatch };
+}
+
+export function useFormNew() {
+	const a = useFormHook();
+
+	return a
 }
 
 const isEmpty = (arr) => {

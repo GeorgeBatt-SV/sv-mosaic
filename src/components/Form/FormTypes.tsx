@@ -2,6 +2,7 @@ import { ButtonProps } from "@root/components/Button";
 import { FieldDef } from "@root/components/Field";
 import { Section } from "@root/forms/FormNav/FormNavTypes";
 import { MosaicObject, MosaicShow } from "@root/types";
+import { Control } from "react-hook-form/dist/types";
 
 export interface SectionDef extends Section {
 	title?: string;
@@ -25,6 +26,7 @@ export interface FormProps {
 	buttons?: ButtonProps[];
 	tooltipInfo?: string;
 	showActive?: boolean;
+	control?: Control
 }
 
 export { FieldDef };

@@ -27,6 +27,7 @@ import FormFieldNumberTable from "@root/forms/FormFieldNumberTable";
 import evaluateShow from "@root/utils/show/evaluateShow";
 import Blank from "@root/components/Blank";
 import RegisteredField from "../Field/RegisteredField";
+import { Control, Controller } from "react-hook-form"
 
 const StyledCol = styled.div`
 	display: flex;
@@ -44,6 +45,7 @@ interface ColPropsTypes {
 	colIdx?: number;
 	rowIdx?: number;
 	sectionIdx?: number;
+	control?: Control
 }
 
 const Col = (props: ColPropsTypes) => {
@@ -55,7 +57,8 @@ const Col = (props: ColPropsTypes) => {
 		colsInRow,
 		colIdx,
 		rowIdx,
-		sectionIdx
+		sectionIdx,
+		control
 	} = props;
 
 	const componentMap = useMemo(() => ({
@@ -180,15 +183,21 @@ const Col = (props: ColPropsTypes) => {
 					}
 
 				const children = useMemo(() => (
-					<Component
-						fieldDef={{ ...currentField, size: maxSize, }}
+					<Controller
+						control={control}
 						name={name}
-						value={value}
-						error={error}
-						onChange={onChange}
-						ref={ref}
-						// onBlur={onBlur}
-						key={`${name}_${i}`}
+						render={({ field: { onChange, value }, fieldState: { error } }) => (
+							<Component
+								fieldDef={{ ...currentField, size: maxSize, }}
+								name={name}
+								value={value}
+								error={error}
+								onChange={onChange}
+								ref={ref}
+								// onBlur={onBlur}
+								key={`${name}_${i}`}
+							/>
+						)}
 					/>
 				), [value, error, onChange, currentField]);
 

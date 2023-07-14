@@ -24,6 +24,7 @@ import { NavWrapper } from "@root/components/LeftNav/NavWrapper";
 import { getOptionsCountries, getOptionsStates } from "@root/forms/FormFieldAddress/utils/optionGetters";
 import { nanoid } from "nanoid";
 import { columns, numberTableDefaultValue, rows } from "@root/forms/FormFieldNumberTable/numberTableUtils";
+import { useFormNew } from "./formUtils";
 
 export default {
 	title: "Components/Form",
@@ -52,6 +53,8 @@ const createNewOption = async (newOptionLabel) => {
 export const Playground = (): ReactElement => {
 	const [loadReady, setLoadReady] = useState(false);
 	const { state, dispatch } = useForm();
+
+	const { control, handleSubmit } = useFormNew();
 
 	useEffect(() => {
 		document.body.style.margin = "0px";
@@ -667,6 +670,27 @@ export const Playground = (): ReactElement => {
 		prepopulate ? resetForm() : setLoadReady(false);
 	}, [prepopulate, showGetFormValues, showDefaultValues]);
 
+
+
+	const buttons: ButtonProps[] = useMemo(() => ([
+		{
+			label: "Cancel",
+			onClick: () => {
+				alert("Cancelling form, going back to previous site");
+			},
+			color: "gray",
+			variant: "outlined",
+			show: showCancel,
+		},
+		{
+			label: "Save",
+			onClick: handleSubmit((values) => console.log(values)),
+			color: "yellow",
+			variant: "contained",
+			show: showSave
+		},
+	]), []);
+
 	return (
 		<>
 			{
@@ -682,9 +706,10 @@ export const Playground = (): ReactElement => {
 					dispatch={dispatch}
 					getFormValues={showGetFormValues === "None" ? undefined : (loadReady && getFormValues)}
 					sections={showSections > 0 ? sectionsAmount : undefined}
-					buttons={renderButtons(dispatch, { showCancel, showSave })}
+					buttons={buttons}
 					tooltipInfo={showTooltipInfo && tooltipInfo}
 					showActive={showActive}
+					control={control}
 				/>
 			</div>
 		</>

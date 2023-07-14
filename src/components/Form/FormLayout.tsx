@@ -11,6 +11,7 @@ import Section from "./Section";
 // Types
 import { ViewType } from "@root/forms/TopComponent";
 import evaluateShow from "@root/utils/show/evaluateShow";
+import { Control } from "react-hook-form";
 
 interface FormLayoutProps {
   state: any;
@@ -18,6 +19,7 @@ interface FormLayoutProps {
   fields: FieldDef[];
   sections: SectionDef[];
   view: ViewType;
+  control?: Control
 }
 
 const StyledFormLayout = styled.div`
@@ -26,7 +28,7 @@ const StyledFormLayout = styled.div`
 `;
 
 const FormLayout = forwardRef((props: FormLayoutProps, ref) => {
-	const { state, dispatch, fields, sections, view } = props;
+	const { state, dispatch, fields, sections, view, control } = props;
 	const sectionRef = ref as RefObject<HTMLDivElement>;
 
 	const layout = useMemo(() => {
@@ -48,6 +50,7 @@ const FormLayout = forwardRef((props: FormLayoutProps, ref) => {
 					dispatch={dispatch}
 					view={view}
 					collapsed={section.collapsed}
+					control={control}
 				/>
 			))}
 		</StyledFormLayout>
