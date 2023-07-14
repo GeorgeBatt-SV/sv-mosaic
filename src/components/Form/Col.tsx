@@ -186,18 +186,19 @@ const Col = (props: ColPropsTypes) => {
 					<Controller
 						control={control}
 						name={name}
-						render={({ field: { onChange, value }, fieldState: { error } }) => (
-							<Component
+						rules={{required: fieldProps.required ? "This is a required field" : false}}
+						render={({ field: { onChange, value }, fieldState: { invalid, error } }) => {
+							return <Component
 								fieldDef={{ ...currentField, size: maxSize, }}
 								name={name}
 								value={value}
-								error={error}
+								error={error ? error.message : ""}
 								onChange={onChange}
 								ref={ref}
 								// onBlur={onBlur}
 								key={`${name}_${i}`}
 							/>
-						)}
+						}}
 					/>
 				), [value, error, onChange, currentField]);
 

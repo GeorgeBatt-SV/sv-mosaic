@@ -54,7 +54,7 @@ export const Playground = (): ReactElement => {
 	const [loadReady, setLoadReady] = useState(false);
 	const { state, dispatch } = useForm();
 
-	const { control, handleSubmit } = useFormNew();
+	const { control, handleSubmit, formState: {errors} } = useFormNew();
 
 	useEffect(() => {
 		document.body.style.margin = "0px";
@@ -690,6 +690,8 @@ export const Playground = (): ReactElement => {
 			show: showSave
 		},
 	]), []);
+
+	console.log("ERRORS: ", errors)
 
 	return (
 		<>

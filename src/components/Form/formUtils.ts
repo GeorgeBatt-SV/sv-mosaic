@@ -149,7 +149,9 @@ export function useForm(): UseFormReturn {
 }
 
 export function useFormNew() {
-	const a = useFormHook();
+	const a = useFormHook({
+		mode: "onBlur"
+	});
 
 	return a
 }
