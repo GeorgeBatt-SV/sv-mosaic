@@ -15,7 +15,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { MosaicShow } from "@root/types";
-import { Control } from "react-hook-form";
+import { UseFormNewReturn } from "./FormTypes";
 
 const StyledAccordion = styled(Accordion)`
 	box-shadow: none !important;
@@ -74,7 +74,7 @@ interface SectionPropTypes {
 	view: ViewType;
 	collapsed?: boolean;
 	show?: MosaicShow
-	control?: Control
+	methods?: UseFormNewReturn
 }
 
 const Section = forwardRef((props: SectionPropTypes, ref: any) => {
@@ -88,7 +88,7 @@ const Section = forwardRef((props: SectionPropTypes, ref: any) => {
 		state,
 		view,
 		collapsed = false,
-		control
+		methods
 	} = props;
 
 	const [expanded, setExpanded] = useState<boolean>(false);
@@ -151,7 +151,7 @@ const Section = forwardRef((props: SectionPropTypes, ref: any) => {
 								state={state}
 								fieldsDef={fieldsDef}
 								dispatch={dispatch}
-								control={control}
+								methods={methods}
 							/>
 						))}
 					</StyledRows>

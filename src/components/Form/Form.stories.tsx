@@ -54,7 +54,8 @@ export const Playground = (): ReactElement => {
 	const [loadReady, setLoadReady] = useState(false);
 	const { state, dispatch } = useForm();
 
-	const { control, handleSubmit, formState: {errors} } = useFormNew();
+	const formMethods = useFormNew();
+	const {handleSubmit} = formMethods;
 
 	useEffect(() => {
 		document.body.style.margin = "0px";
@@ -691,8 +692,6 @@ export const Playground = (): ReactElement => {
 		},
 	]), []);
 
-	console.log("ERRORS: ", errors)
-
 	return (
 		<>
 			{
@@ -711,7 +710,7 @@ export const Playground = (): ReactElement => {
 					buttons={buttons}
 					tooltipInfo={showTooltipInfo && tooltipInfo}
 					showActive={showActive}
-					control={control}
+					methods={formMethods}
 				/>
 			</div>
 		</>
@@ -720,6 +719,8 @@ export const Playground = (): ReactElement => {
 
 export const FormWithLayout = (props: {height?: string}): ReactElement => {
 	const { state, dispatch } = useForm();
+
+	const methods = useFormNew();
 
 	useEffect(() => {
 		document.body.style.margin = "0px";
@@ -761,6 +762,7 @@ export const FormWithLayout = (props: {height?: string}): ReactElement => {
 					label: "Multiline text that receives copy",
 					type: "text",
 					instructionText: "Instruction text text1",
+					copy: "text3",
 					inputSettings: {
 						multiline: true
 					}
@@ -846,14 +848,11 @@ export const FormWithLayout = (props: {height?: string}): ReactElement => {
 		},
 	], [fields, collapsed]);
 
-	useEffect(() => {
-		dispatch(
-			formActions.setFieldValue({
-				name: "text4",
-				value: state.data.text3
-			})
-		);
-	}, [state.data.text3]);
+	// TODO: This causes a rerender of the entire form. Move
+	// it into field configuration and handle it at a lower level
+	// useEffect(() => {
+	// 	methods.setValue("text4", text3Value);
+	// }, [text3Value]);
 
 	return (
 		<>
@@ -869,6 +868,7 @@ export const FormWithLayout = (props: {height?: string}): ReactElement => {
 					state={state}
 					fields={fields}
 					dispatch={dispatch}
+					methods={methods}
 				/>
 			</div>
 		</>
@@ -877,6 +877,7 @@ export const FormWithLayout = (props: {height?: string}): ReactElement => {
 
 export const PerformanceWithSubmit = (): ReactElement => {
 	const { state, dispatch } = useForm();
+	const methods = useFormNew();
 	const showState = boolean("Show state", false);
 
 	useEffect(() => {
@@ -913,6 +914,7 @@ export const PerformanceWithSubmit = (): ReactElement => {
 					fields={fields}
 					dispatch={dispatch}
 					title='Performance with submit'
+					methods={methods}
 				/>
 			</div>
 		</>
@@ -921,6 +923,7 @@ export const PerformanceWithSubmit = (): ReactElement => {
 
 export const RuntimeBehaviors = (): ReactElement => {
 	const { state, dispatch } = useForm();
+	const methods = useFormNew();
 
 	useEffect(() => {
 		document.body.style.margin = "0px";
@@ -972,6 +975,7 @@ export const RuntimeBehaviors = (): ReactElement => {
 		);
 	}, [state.data.text3]);
 
+	// TODO what are these demonstrating?
 	const setText1Value = function () {
 		dispatch(
 			formActions.setFieldValue({
@@ -981,6 +985,7 @@ export const RuntimeBehaviors = (): ReactElement => {
 		);
 	};
 
+	// TODO what are these demonstrating?
 	const setText2Value = function () {
 		dispatch(
 			formActions.setFieldValue({
@@ -1002,6 +1007,7 @@ export const RuntimeBehaviors = (): ReactElement => {
 					state={state}
 					fields={fields}
 					dispatch={dispatch}
+					methods={methods}
 				/>
 			</div>
 			<div>
@@ -1019,6 +1025,7 @@ export const RuntimeBehaviors = (): ReactElement => {
 
 export const ConditionalFields = (): ReactElement => {
 	const { state, dispatch } = useForm();
+	const methods = useFormNew();
 	const KEY_PHRASE = "SHOW";
 
 	useEffect(() => {
@@ -1067,6 +1074,7 @@ export const ConditionalFields = (): ReactElement => {
 					state={state}
 					fields={fields}
 					dispatch={dispatch}
+					methods={methods}
 				/>
 			</div>
 		</>
@@ -1413,6 +1421,7 @@ export const CustomFields = (): ReactElement => {
 
 export const Validators = (): ReactElement => {
 	const { state, dispatch } = useForm();
+	const methods = useFormNew();
 
 	useEffect(() => {
 		document.body.style.margin = "0px";
@@ -1501,6 +1510,7 @@ export const Validators = (): ReactElement => {
 					state={state}
 					fields={fields}
 					dispatch={dispatch}
+					methods={methods}
 				/>
 			</div>
 		</>
@@ -1509,6 +1519,7 @@ export const Validators = (): ReactElement => {
 
 export const DefaultValues = (): ReactElement => {
 	const { state, dispatch } = useForm();
+	const methods = useFormNew();
 
 	useEffect(() => {
 		document.body.style.margin = "0px";
@@ -1546,6 +1557,7 @@ export const DefaultValues = (): ReactElement => {
 					state={state}
 					fields={fields}
 					dispatch={dispatch}
+					methods={methods}
 				/>
 			</div>
 		</>

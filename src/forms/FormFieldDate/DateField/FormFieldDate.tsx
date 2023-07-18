@@ -125,6 +125,7 @@ const FormFieldDate = (props: MosaicFieldProps<"date", DateFieldInputSettings, D
 							}}
 							value={dateInput}
 							onBlur={onBlur}
+							blurOnAccept
 						/>
 					</DateTimePickerWrapper>
 					{fieldDef?.inputSettings?.showTime &&

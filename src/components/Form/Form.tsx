@@ -12,8 +12,9 @@ import Dialog from "@root/components/Dialog";
 import { Views } from "@root/theme/theme";
 import evaluateShow from "@root/utils/show/evaluateShow";
 import { ButtonProps } from "../Button";
-import { useRefsDispatch } from "../../forms/shared/refsContext/RefsContext";
-import SideNav, { Item, SideNavArgs } from "../SideNav";
+// import { useRefsDispatch } from "../../forms/shared/refsContext/RefsContext";
+// import SideNav, { Item, SideNavArgs } from "../SideNav";
+import SideNav, { Item } from "../SideNav";
 
 const Form = (props: FormProps) => {
 	const {
@@ -30,63 +31,63 @@ const Form = (props: FormProps) => {
 		handleDialogClose,
 		tooltipInfo,
 		showActive,
-		control
+		methods
 	} = props;
 
 	const sectionsRef = useRef<HTMLDivElement[]>([]);
 	const formContainerRef = useRef<HTMLDivElement>();
 	const topComponentRef = useRef<HTMLDivElement>();
 	const formContentRef = useRef<HTMLDivElement>();
-	const [activeSection, setActiveSection] = useState("0");
+	const [activeSection] = useState("0");
 
-	const dispatchRef = useRefsDispatch();
+	// const dispatchRef = useRefsDispatch();
 
-	const [sectionsRefs, setSectionsRefs] = useState<HTMLDivElement[]>([]);
+	// const [sectionsRefs, setSectionsRefs] = useState<HTMLDivElement[]>([]);
 	const { view } = useViewResizer({ formContainerRef });
 
-	useEffect(() => {
-		setSectionsRefs(sectionsRef.current);
-	}, []);
+	// useEffect(() => {
+	// 	setSectionsRefs(sectionsRef.current);
+	// }, []);
 
-	useEffect(() => {
-		dispatchRef && topComponentRef.current && dispatchRef({
-			type: "update",
-			ref: {
-				topComponentDrawerRef: topComponentRef.current
-			}
-		});
+	// useEffect(() => {
+	// 	dispatchRef && topComponentRef.current && dispatchRef({
+	// 		type: "update",
+	// 		ref: {
+	// 			topComponentDrawerRef: topComponentRef.current
+	// 		}
+	// 	});
 
-	}, [topComponentRef.current?.offsetHeight, view]);
+	// }, [topComponentRef.current?.offsetHeight, view]);
 
-	useEffect(() => {
-		dispatchRef && formContentRef.current?.children[0] &&
-			dispatchRef({
-				type: "update",
-				ref: {
-					formLayoutRef: formContentRef.current.children[0]
-				}
-			});
+	// useEffect(() => {
+	// 	dispatchRef && formContentRef.current?.children[0] &&
+	// 		dispatchRef({
+	// 			type: "update",
+	// 			ref: {
+	// 				formLayoutRef: formContentRef.current.children[0]
+	// 			}
+	// 		});
 
-	}, [formContentRef.current?.children[0], view]);
+	// }, [formContentRef.current?.children[0], view]);
 
-	useEffect(() => {
-		let isMounted = true;
-		const registerFields = async () => {
-			await dispatch(
-				formActions.init({
-					fields
-				})
-			);
-		}
+	// useEffect(() => {
+	// 	let isMounted = true;
+	// 	const registerFields = async () => {
+	// 		await dispatch(
+	// 			formActions.init({
+	// 				fields
+	// 			})
+	// 		);
+	// 	}
 
-		if (isMounted) {
-			registerFields();
-		}
+	// 	if (isMounted) {
+	// 		registerFields();
+	// 	}
 
-		return () => {
-			isMounted = false;
-		}
-	},[fields])
+	// 	return () => {
+	// 		isMounted = false;
+	// 	}
+	// },[fields])
 
 	useEffect(() => {
 		const loadFormValues = async () => {
@@ -95,6 +96,8 @@ const Form = (props: FormProps) => {
 
 			values = getFormValues ? await getFormValues() : undefined;
 
+			// If getFormValues is defined, use the result of that invokation,
+			// otherwise fallback to each field's "defaultValue"
 			if (values === undefined) {
 				fields.forEach(field => {
 					if ("defaultValue" in field) {
@@ -108,12 +111,16 @@ const Form = (props: FormProps) => {
 			}
 
 			if (values) {
-				await dispatch(
-					formActions.setFormValues({
-						values
-					})
-				);
+				methods.reset(values);
 			}
+
+			// if (values) {
+			// 	await dispatch(
+			// 		formActions.setFormValues({
+			// 			values
+			// 		})
+			// 	);
+			// }
 
 			await dispatch(formActions.disableForm({ disabled: false }));
 		}
@@ -154,27 +161,27 @@ const Form = (props: FormProps) => {
 	 * IntersectionObserver the user has scrolled into a section
 	 * and highlighting it.
 	 */
-	useEffect(() => {
-		if (!isBigDesktopWithSections) {
-			return;
-		}
+	// useEffect(() => {
+	// 	if (!isBigDesktopWithSections) {
+	// 		return;
+	// 	}
 
-		const observer = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
-				const sectionId = entry?.target.getAttribute("id");
+	// 	const observer = new IntersectionObserver((entries) => {
+	// 		entries.forEach(entry => {
+	// 			const sectionId = entry?.target.getAttribute("id");
 
-				if (entry.isIntersecting) {
-					setActiveSection(sectionId);
-				}
-			})
-		}, { threshold: 0.5, rootMargin: "-20px 0px -20%", root: formContentRef?.current });
+	// 			if (entry.isIntersecting) {
+	// 				setActiveSection(sectionId);
+	// 			}
+	// 		})
+	// 	}, { threshold: 0.5, rootMargin: "-20px 0px -20%", root: formContentRef?.current });
 
-		sectionsRefs?.forEach(section => {
-			observer.observe(section);
-		})
+	// 	sectionsRefs?.forEach(section => {
+	// 		observer.observe(section);
+	// 	})
 
-		return () => observer.disconnect();
-	}, [sectionsRefs, sections, view]);
+	// 	return () => observer.disconnect();
+	// }, [sectionsRefs, sections, view]);
 
 	/**
 	 * In order to use the SideNav on a big desktop we need to transform
@@ -200,13 +207,13 @@ const Form = (props: FormProps) => {
 	 * was clicked.
 	 * @param args
 	 */
-	const onNav = (args: SideNavArgs) => {
-		const sectionIndex = Number(args.item.name);
-		sectionsRefs[sectionIndex].scrollIntoView({
-			behavior: "smooth",
-			block: "start"
-		});
-	};
+	// const onNav = (args: SideNavArgs) => {
+	// 	const sectionIndex = Number(args.item.name);
+	// 	sectionsRefs[sectionIndex].scrollIntoView({
+	// 		behavior: "smooth",
+	// 		block: "start"
+	// 	});
+	// };
 
 	return (
 		<>
@@ -227,7 +234,7 @@ const Form = (props: FormProps) => {
 							sections={topComponentSections}
 							view={view}
 							buttons={filteredButtons}
-							sectionsRefs={sectionsRefs}
+							// sectionsRefs={sectionsRefs}
 							formContentRef={formContentRef}
 							tooltipInfo={tooltipInfo}
 							showActive={showActive}
@@ -239,7 +246,7 @@ const Form = (props: FormProps) => {
 								<SideNav
 									items={[items]}
 									active={activeSection}
-									onNav={onNav}
+									// onNav={onNav}
 								/>
 								}
 								<FormContent view={view} sections={sections} ref={formContentRef}>
@@ -250,7 +257,7 @@ const Form = (props: FormProps) => {
 										fields={fields}
 										sections={sections}
 										view={view}
-										control={control}
+										methods={methods}
 									/>
 								</FormContent>
 							</Row>
@@ -263,7 +270,7 @@ const Form = (props: FormProps) => {
 									fields={fields}
 									sections={sections}
 									view={view}
-									control={control}
+									methods={methods}
 								/>
 							</FormContent>
 						)}

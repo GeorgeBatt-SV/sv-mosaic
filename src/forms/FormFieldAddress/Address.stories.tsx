@@ -5,6 +5,7 @@ import { renderButtons } from "@root/utils/storyUtils";
 import { FieldDef } from "../../components/Field";
 import Form, { useForm } from "@root/components/Form";
 import { getOptionsCountries, getOptionsStates } from "./utils/optionGetters";
+import { useFormNew } from "@root/components/Form/formUtils";
 
 export default {
 	title: "FormFields/FormFieldAddress",
@@ -13,6 +14,7 @@ export default {
 
 export const Playground = (): ReactElement => {
 	const { state, dispatch } = useForm();
+	const { control } = useFormNew();
 
 	const label = text("Label", "Label");
 	const disabled = boolean("Disabled", false);
@@ -66,6 +68,7 @@ export const Playground = (): ReactElement => {
 				state={state}
 				fields={fields}
 				dispatch={dispatch}
+				control={control}
 			/>
 		</>
 	);

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { memo, ReactElement, useState, useEffect } from "react";
+import { Controller, useFieldArray } from "react-hook-form"
 
 // Components
 import AddressDrawer from "./AddressDrawer";
@@ -12,7 +13,7 @@ import { AddAddressWrapper, FlexContainer } from "./Address.styled";
 // Utils
 import AddressCard from "./AddressCard";
 import { MosaicFieldProps } from "@root/components/Field";
-import { AddressFieldInputSettings, AddressData } from ".";
+import { AddressFieldInputSettings, AddressData, IAddress } from ".";
 import { isEmpty } from "lodash";
 
 const FormFieldAddress = (props: MosaicFieldProps<"address", AddressFieldInputSettings, AddressData>): ReactElement => {
@@ -21,12 +22,20 @@ const FormFieldAddress = (props: MosaicFieldProps<"address", AddressFieldInputSe
 		onBlur,
 		onChange,
 		fieldDef,
+		methods: { control }
 	} = props;
 
 	// State variables
 	const [open, setOpen] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [addressToEdit, setAddressToEdit] = useState(null);
+
+	const { append } = useFieldArray({
+		control,
+		name: fieldDef.name
+	});
+
+	const [editingDraw, setEditingDraw] = useState<null | {new: true} | {editing: IAddress, index: number}>(null);
 
 	// States of the form values
 	const [addressIdx, setAddressIdx] = useState(null);
@@ -106,8 +115,9 @@ const FormFieldAddress = (props: MosaicFieldProps<"address", AddressFieldInputSe
 	 * and sets editing mode to false.
 	 */
 	const addAddressHandler = () => {
-		setIsEditing(false);
-		setOpen(true);
+		// setIsEditing(false);
+		// setOpen(true);
+		setEditingDraw({new: true})
 	};
 
 	/**
@@ -131,12 +141,12 @@ const FormFieldAddress = (props: MosaicFieldProps<"address", AddressFieldInputSe
 	 */
 	const handleClose = async (save = false) => {
 		if (typeof save === "boolean" && save) {
-			setOpen(false);
+			setEditingDraw(null)
 			if (onBlur) await onBlur();
 		} else if (hasUnsavedChanges)
 			setIsDialogOpen(true);
 		else {
-			setOpen(false);
+			setEditingDraw(null)
 			if (onBlur) await onBlur();
 		}
 	};
@@ -156,6 +166,11 @@ const FormFieldAddress = (props: MosaicFieldProps<"address", AddressFieldInputSe
 	 * @param addressToEdit
 	 */
 	const showEditModal = (addressToEdit, addressIndex) => {
+		setEditingDraw({
+			editing: addressToEdit,
+			index: addressIndex
+		});
+
 		const {
 			address1,
 			address2,
@@ -184,6 +199,10 @@ const FormFieldAddress = (props: MosaicFieldProps<"address", AddressFieldInputSe
 		setOpen(true);
 	};
 
+	const onChangeProxy = async (address: IAddress) => {
+		append(address);
+	};
+
 	return (
 		<div>
 			<FlexContainer>
@@ -210,26 +229,55 @@ const FormFieldAddress = (props: MosaicFieldProps<"address", AddressFieldInputSe
 						/>
 					))}
 			</FlexContainer>
-			<Drawer open={open} onClose={handleClose}>
-				<AddressDrawer
-					googleMapsApiKey={fieldDef.inputSettings.googleMapsApiKey}
-					open={open}
-					value={value ?? []}
-					onChange={onChange}
-					isEditing={isEditing}
-					addressIdx={addressIdx}
-					handleClose={handleClose}
-					setIsEditing={setIsEditing}
-					addressToEdit={addressToEdit}
-					hasUnsavedChanges={hasUnsavedChanges}
-					handleUnsavedChanges={(e) => setUnsavedChanges(e)}
-					dialogOpen={dialogOpen}
-					handleDialogClose={handleDialogClose}
-					addressTypes={addressTypes}
-					getOptionsCountries={fieldDef.inputSettings?.getOptionsCountries}
-					getOptionsStates={fieldDef.inputSettings?.getOptionsStates}
+			{(editingDraw !== null && "editing" in editingDraw) ? (
+				<Controller
+					control={control}
+					name={`${fieldDef.name}.${editingDraw.index}`}
+					render={({field: {onChange}}) => (
+						<Drawer open={Boolean(editingDraw)} onClose={handleClose}>
+							<AddressDrawer
+								googleMapsApiKey={fieldDef.inputSettings.googleMapsApiKey}
+								open={Boolean(editingDraw)}
+								value={value ?? []}
+								onChange={onChange}
+								isEditing={isEditing}
+								addressIdx={addressIdx}
+								handleClose={handleClose}
+								setIsEditing={setIsEditing}
+								addressToEdit={editingDraw.editing}
+								hasUnsavedChanges={hasUnsavedChanges}
+								handleUnsavedChanges={(e) => setUnsavedChanges(e)}
+								dialogOpen={dialogOpen}
+								handleDialogClose={handleDialogClose}
+								addressTypes={addressTypes}
+								getOptionsCountries={fieldDef.inputSettings?.getOptionsCountries}
+								getOptionsStates={fieldDef.inputSettings?.getOptionsStates}
+							/>
+						</Drawer>
+					)}
 				/>
-			</Drawer>
+			) : (
+				<Drawer open={Boolean(editingDraw)} onClose={handleClose}>
+					<AddressDrawer
+						googleMapsApiKey={fieldDef.inputSettings.googleMapsApiKey}
+						open={Boolean(editingDraw)}
+						value={value ?? []}
+						onChange={onChangeProxy}
+						isEditing={isEditing}
+						addressIdx={addressIdx}
+						handleClose={handleClose}
+						setIsEditing={setIsEditing}
+						addressToEdit={addressToEdit}
+						hasUnsavedChanges={hasUnsavedChanges}
+						handleUnsavedChanges={(e) => setUnsavedChanges(e)}
+						dialogOpen={dialogOpen}
+						handleDialogClose={handleDialogClose}
+						addressTypes={addressTypes}
+						getOptionsCountries={fieldDef.inputSettings?.getOptionsCountries}
+						getOptionsStates={fieldDef.inputSettings?.getOptionsStates}
+					/>
+				</Drawer>
+			)}
 		</div>
 	);
 };

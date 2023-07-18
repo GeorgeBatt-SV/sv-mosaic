@@ -1,3 +1,6 @@
+import { ValidateResult } from "react-hook-form";
+import { FieldDef } from "../Field";
+
 export const VALIDATE_EMAIL_TYPE = "validateEmail";
 export const VALIDATE_SLOW_TYPE = "validateSlow";
 export const REQUIRED_TYPE = "required";
@@ -173,4 +176,19 @@ export function mapsValidators(validators): Validator[] {
 		else if (typeof validator === "function") return { fn: validator, options: {} };
 		else return { fn: validatorsMap[validator.fn], options: validator.options };
 	})
+}
+
+export function createValidationChain(validators: FieldDef["validators"]): (value: string, data: any) => Promise<ValidateResult> {
+	return async (value, data) => {
+		const resolvedValidators = mapsValidators(validators);
+		const result = await Promise.all(resolvedValidators.map(validator => {
+			return validator.fn(value, data, validator.options);
+		}));
+
+		if (!result.length) {
+			return true;
+		}
+
+		return result[0];
+	}
 }

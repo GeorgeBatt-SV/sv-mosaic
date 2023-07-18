@@ -1,7 +1,8 @@
 import { MosaicObject } from "@root/types";
 import { useRef, useCallback, useReducer, Dispatch } from "react";
 import { SectionDef } from "./FormTypes";
-import { useForm as useFormHook } from "react-hook-form"
+import { UseFormProps, useForm as useFormHook } from "react-hook-form"
+import { arrayEquals } from "@root/utils/array/arrayEquals";
 
 type State = {
 	data: MosaicObject<any>;
@@ -148,12 +149,34 @@ export function useForm(): UseFormReturn {
 	return { state, dispatch };
 }
 
-export function useFormNew() {
-	const a = useFormHook({
-		mode: "onBlur"
+export function useFormNew(props: UseFormProps = {}) {
+	const methods = useFormHook({
+		...props,
+		mode: props.mode || "onBlur"
 	});
 
-	return a
+	// Keeps track of paired field arrays that are currently being validated
+	// to prevent fields that pair with each other from validating one another
+	// forever.
+	const activePairedValidations = useRef<string[][]>([]);
+
+	const pairedValidation = useCallback((fieldNames: string[]) => {
+		if (activePairedValidations.current.find(list => arrayEquals(list, fieldNames, {matchOrder: false}))) {
+			return;
+		}
+
+		const length = activePairedValidations.current.push(fieldNames);
+
+		// Don't validate the first one, because that is the "source"
+		// field and it's already being validated
+		fieldNames.slice(1).forEach(name => {
+			methods.trigger(name);
+		});
+
+		activePairedValidations.current.splice(length - 1, 1);
+	}, [activePairedValidations.current]);
+
+	return {...methods, pairedValidation}
 }
 
 const isEmpty = (arr) => {

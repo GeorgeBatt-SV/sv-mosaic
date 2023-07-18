@@ -3,10 +3,11 @@ import theme from "@root/theme";
 import * as React from "react";
 import { memo } from "react";
 import styled from "styled-components";
-import { Control } from "react-hook-form"
 
 // Components
 import Col from "./Col";
+import OldCol from "./OldCol";
+import { UseFormNewReturn } from "./FormTypes";
 
 const StyledRow = styled.div`
 	display: flex;
@@ -20,16 +21,16 @@ interface RowPropTypes {
 	dispatch: any;
 	rowIdx?: number;
 	sectionIdx?: number;
-	control?: Control;
+	methods?: UseFormNewReturn
 }
 
 const Row = (props: RowPropTypes) => {
-	const { row, rowIdx, state, fieldsDef, dispatch, sectionIdx, control } = props;
+	const { row, rowIdx, state, fieldsDef, dispatch, sectionIdx, methods } = props;
 
 	return (
 		<StyledRow>
 			{row.map((col, i) => {
-				return (
+				return methods ? (
 					<Col
 						key={`col-${i}`}
 						colIdx={i}
@@ -40,7 +41,19 @@ const Row = (props: RowPropTypes) => {
 						fieldsDef={fieldsDef}
 						dispatch={dispatch}
 						colsInRow={row.length}
-						control={control}
+						methods={methods}
+					/>
+				) : (
+					<OldCol
+						key={`col-${i}`}
+						colIdx={i}
+						rowIdx={rowIdx}
+						sectionIdx={sectionIdx}
+						col={col}
+						state={state}
+						fieldsDef={fieldsDef}
+						dispatch={dispatch}
+						colsInRow={row.length}
 					/>
 				)
 			})}

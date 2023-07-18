@@ -2,7 +2,7 @@ import { ButtonProps } from "@root/components/Button";
 import { FieldDef } from "@root/components/Field";
 import { Section } from "@root/forms/FormNav/FormNavTypes";
 import { MosaicObject, MosaicShow } from "@root/types";
-import { Control } from "react-hook-form/dist/types";
+import { Control, UseFormReturn } from "react-hook-form/dist/types";
 
 export interface SectionDef extends Section {
 	title?: string;
@@ -10,6 +10,10 @@ export interface SectionDef extends Section {
 	fields: string[][][];
 	collapsed?: boolean;
 	show?: MosaicShow
+}
+
+export type UseFormNewReturn = UseFormReturn & {
+	pairedValidation: (fieldNames: string[]) => void
 }
 
 export interface FormProps {
@@ -27,6 +31,7 @@ export interface FormProps {
 	tooltipInfo?: string;
 	showActive?: boolean;
 	control?: Control
+	methods?: UseFormNewReturn
 }
 
 export { FieldDef };

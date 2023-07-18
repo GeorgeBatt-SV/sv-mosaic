@@ -7,7 +7,7 @@ import { ButtonProps } from "@root/components/Button";
 import Form, { formActions, useForm } from "@root/components/Form";
 
 // Utils
-import { IAddress } from "@root/forms/FormFieldAddress";
+// import { IAddress } from "@root/forms/FormFieldAddress";
 import { AddressDrawerProps } from "../AddressTypes";
 import _ from "lodash";
 import { FormDrawerWrapper } from "@root/forms/shared/styledComponents";
@@ -20,6 +20,7 @@ import { MosaicLabelValue } from "@root/types";
 import Snackbar from "@root/components/Snackbar";
 import Sizes from "@root/theme/sizes";
 import Field from "@root/components/Field";
+import { useFormNew } from "@root/components/Form/formUtils";
 
 // Layout of the form elements.
 const sections = [
@@ -30,21 +31,21 @@ const sections = [
 			[["address3"]],
 			[["country"]],
 			[["city"], ["states"], ["postalCode"]],
-			[["type"]],
+			[["types"]],
 		],
 	},
 ];
 
 const AddressDrawer = (props: AddressDrawerProps): ReactElement => {
 	const {
-		value,
+		// value,
 		onChange,
 		open,
 		addressToEdit,
 		isEditing,
-		addressIdx,
+		// addressIdx,
 		handleClose,
-		setIsEditing,
+		// setIsEditing,
 		handleUnsavedChanges,
 		dialogOpen,
 		handleDialogClose,
@@ -55,6 +56,7 @@ const AddressDrawer = (props: AddressDrawerProps): ReactElement => {
 	} = props;
 
 	const { dispatch, state } = useForm();
+	const { control, handleSubmit } = useFormNew();
 	const [address, setAddress] = useState("");
 	const [snackBarLabel, setSnackBarLabel] = useState("");
 	const [openSnackBar, setOpenSnackbar] = useState(false);
@@ -181,70 +183,44 @@ const AddressDrawer = (props: AddressDrawerProps): ReactElement => {
 	 * Executed on the form submit if editing mode is true
 	 * @returns the list of addresses with the new updates
 	 */
-	const editAddress = (): IAddress[] => {
-		const listOfAddresses = [...value];
+	// const editAddress = (): IAddress[] => {
+	// 	const listOfAddresses = [...value];
 
-		listOfAddresses[addressIdx].address1 = state?.data?.address1;
-		listOfAddresses[addressIdx].address2 = state?.data?.address2;
-		listOfAddresses[addressIdx].address3 = state?.data?.address3;
-		listOfAddresses[addressIdx].city = state?.data?.city;
-		listOfAddresses[addressIdx].postalCode = state?.data?.postalCode.trim();
-		listOfAddresses[addressIdx].country = state?.data?.country;
-		listOfAddresses[addressIdx].state = state?.data?.states;
-		listOfAddresses[addressIdx].types = state?.data?.type;
+	// 	listOfAddresses[addressIdx].address1 = state?.data?.address1;
+	// 	listOfAddresses[addressIdx].address2 = state?.data?.address2;
+	// 	listOfAddresses[addressIdx].address3 = state?.data?.address3;
+	// 	listOfAddresses[addressIdx].city = state?.data?.city;
+	// 	listOfAddresses[addressIdx].postalCode = state?.data?.postalCode.trim();
+	// 	listOfAddresses[addressIdx].country = state?.data?.country;
+	// 	listOfAddresses[addressIdx].state = state?.data?.states;
+	// 	listOfAddresses[addressIdx].types = state?.data?.type;
 
-		return listOfAddresses;
-	};
+	// 	return listOfAddresses;
+	// };
 
 	/**
 	 * Executed on the form submit if editing mode is false
 	 * @returns the lists of addresses with the new ones created
 	 */
-	const addNewAddress = (): IAddress[] => {
-		const listOfAddresses = [...value];
-		const id = listOfAddresses?.length + 1;
+	// const addNewAddress = (): IAddress[] => {
+	// 	const listOfAddresses = [...value];
+	// 	const id = listOfAddresses?.length + 1;
 
-		listOfAddresses.push({
-			id: id,
-			address1: state?.data?.address1,
-			address2: state?.data?.address2,
-			address3: state?.data?.address3,
-			city: state?.data?.city,
-			postalCode: state?.data?.postalCode.trim(),
-			country: state?.data?.country,
-			state: state?.data?.states,
-			types: state?.data?.type,
-		});
-		setIsEditing(false);
+	// 	listOfAddresses.push({
+	// 		id: id,
+	// 		address1: state?.data?.address1,
+	// 		address2: state?.data?.address2,
+	// 		address3: state?.data?.address3,
+	// 		city: state?.data?.city,
+	// 		postalCode: state?.data?.postalCode.trim(),
+	// 		country: state?.data?.country,
+	// 		state: state?.data?.states,
+	// 		types: state?.data?.type,
+	// 	});
+	// 	setIsEditing(false);
 
-		return listOfAddresses;
-	};
-
-	/**
-	 * Form submit handler.
-	 * It adds a new address or edits an existing one and then
-	 * closes the Drawer.
-	 */
-	const onSubmit = async () => {
-		const { valid } = await dispatch(formActions.submitForm());
-		if (!valid) return;
-
-		const listOfAddresses = isEditing ? editAddress() : addNewAddress();
-
-		onChange && (await onChange(listOfAddresses));
-		handleClose(true);
-	};
-
-	useEffect(() => {
-		const handleApiStateChange = async () => {
-			if (apiState !== undefined) {
-				await setFieldValue("states", { label: apiState.label, value: apiState.value }, true);
-				setApiState(undefined);
-			}
-		}
-
-		handleApiStateChange();
-	}, [apiState]);
+	// 	return listOfAddresses;
+	// };
 
 	const autocompleteAddress = async (addressComponents: google.maps.GeocoderAddressComponent[]) => {
 		let componentsNotFound = "";
@@ -414,7 +390,7 @@ const AddressDrawer = (props: AddressDrawerProps): ReactElement => {
 					},
 				},
 				{
-					name: "type",
+					name: "types",
 					type: "checkbox",
 					label: "Type",
 					size: "sm",
@@ -436,7 +412,10 @@ const AddressDrawer = (props: AddressDrawerProps): ReactElement => {
 		},
 		{
 			label: "Save",
-			onClick: onSubmit,
+			onClick: handleSubmit((values) => {
+				onChange && onChange(values);
+				handleClose(true);
+			}),
 			color: "yellow",
 			variant: "contained"
 		}
@@ -464,6 +443,7 @@ const AddressDrawer = (props: AddressDrawerProps): ReactElement => {
 				fields={fields}
 				dialogOpen={dialogOpen}
 				handleDialogClose={handleDialogClose}
+				control={control}
 			/>
 			<Snackbar
 				autoHideDuration={4000}

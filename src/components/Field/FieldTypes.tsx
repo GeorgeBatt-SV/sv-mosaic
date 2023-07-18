@@ -19,6 +19,7 @@ import { FieldDefToggleSwitch } from "@root/forms/FormFieldToggleSwitch";
 import { FieldDefUpload } from "@root/forms/FormFieldUpload";
 import { MosaicShow } from "@root/types";
 import { HTMLAttributes,  MutableRefObject,  ReactNode } from "react";
+import { UseFormReturn } from "react-hook-form"
 
 // MOSAIC GENERIC CONTRACT
 export interface MosaicFieldProps<T = any, U = any, V = any> {
@@ -56,6 +57,11 @@ export interface MosaicFieldProps<T = any, U = any, V = any> {
 	 * Number that represents the amount of fields that share the same row.
 	 */
 	colsInRow?: number;
+	/**
+	 * Form methods
+	 * @link https://react-hook-form.com/docs/useform/control#main
+	 */
+	methods?: UseFormReturn
 }
 
 // SHARED FIELD DEFINITION - DEVELOPER GENERIC CONTRACT
@@ -147,7 +153,11 @@ export interface FieldDefBase<Type, T = any, U = any> {
 	/**
 	 * Whether or not to show this field
 	 */
-	show?: MosaicShow
+	show?: MosaicShow;
+	/**
+	 * The name of a field to copy in real time
+	 */
+	copy?: string
 }
 
 type FieldDefCustom = FieldDefBase<(props?: any) => JSX.Element>

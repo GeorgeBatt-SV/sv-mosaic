@@ -1,7 +1,6 @@
 import * as React from "react";
 import { ElementType, memo, useMemo } from "react";
 import styled from "styled-components";
-import { formActions } from "./formActions";
 
 import FormFieldText from "@root/forms/FormFieldText";
 import FormFieldCheckbox from "@root/forms/FormFieldCheckbox";
@@ -27,7 +26,9 @@ import FormFieldNumberTable from "@root/forms/FormFieldNumberTable";
 import evaluateShow from "@root/utils/show/evaluateShow";
 import Blank from "@root/components/Blank";
 import RegisteredField from "../Field/RegisteredField";
-import { Control, Controller } from "react-hook-form"
+import { Controller, useWatch } from "react-hook-form"
+import { createValidationChain } from "./validators";
+import { UseFormNewReturn } from "./FormTypes";
 
 const StyledCol = styled.div`
 	display: flex;
@@ -45,7 +46,21 @@ interface ColPropsTypes {
 	colIdx?: number;
 	rowIdx?: number;
 	sectionIdx?: number;
-	control?: Control
+	methods?: UseFormNewReturn
+}
+
+function FieldWithWatcher({component: Component, ...props}: any) {
+	const sourceValue = useWatch({
+		name: props.fieldDef.copy,
+		control: props.methods.control
+	});
+
+	return (
+		<Component
+			{...props}
+			value={sourceValue}
+		/>
+	)
 }
 
 const Col = (props: ColPropsTypes) => {
@@ -58,7 +73,7 @@ const Col = (props: ColPropsTypes) => {
 		colIdx,
 		rowIdx,
 		sectionIdx,
-		control
+		methods,
 	} = props;
 
 	const componentMap = useMemo(() => ({
@@ -83,37 +98,7 @@ const Col = (props: ColPropsTypes) => {
 		numberTable: FormFieldNumberTable
 	}), []);
 
-	const doneTypingInterval = 300;
-	let typingTimer;
 
-	const sendValidateField = async (curr) => {
-		await dispatch(formActions.validateField({ name: curr.name }))
-
-		if (curr.pairedFields)
-			curr.pairedFields.forEach(async pairedField => {
-				await dispatch(
-					formActions.validateField({ name: pairedField })
-				);
-			});
-	};
-
-	const onChangeMap = useMemo(() => {
-		return fieldsDef.reduce((prev, curr) => {
-			prev[curr.name] = async function (value) {
-				await dispatch(
-					formActions.setFieldValue({
-						name: curr.name,
-						value,
-						touched: true
-					})
-				);
-				clearTimeout(typingTimer);
-				typingTimer = setTimeout(async () => await sendValidateField(curr), doneTypingInterval);
-			};
-
-			return prev;
-		}, {});
-	}, [fieldsDef, state.pairedFields]);
 
 	/* const onBlurMap = useMemo(() => {
 		return fieldsDef.reduce((prev, curr) => {
@@ -155,14 +140,11 @@ const Col = (props: ColPropsTypes) => {
 					throw new Error(`Invalid type ${type}`);
 				}
 
-				const onChange = onChangeMap[fieldProps.name];
-
 				// const onBlur = onBlurMap[fieldProps.name];
 
 				const name = fieldProps.name;
 				const ref = fieldProps.ref;
 				const value = state?.data[fieldProps.name];
-				const error = (state?.errors[fieldProps.name] && !currentField.disabled) ? state.errors[fieldProps.name] : "";
 
 				let maxSize: Sizes | string;
 				const SizeSelected = Sizes[currentField?.size] ? Sizes[currentField?.size] : currentField?.size;
@@ -182,45 +164,98 @@ const Col = (props: ColPropsTypes) => {
 						break;
 					}
 
-				const children = useMemo(() => (
-					<Controller
-						control={control}
-						name={name}
-						rules={{required: fieldProps.required ? "This is a required field" : false}}
-						render={({ field: { onChange, value }, fieldState: { invalid, error } }) => {
-							return <Component
-								fieldDef={{ ...currentField, size: maxSize, }}
-								name={name}
-								value={value}
-								error={error ? error.message : ""}
-								onChange={onChange}
-								ref={ref}
-								// onBlur={onBlur}
-								key={`${name}_${i}`}
-							/>
-						}}
-					/>
-				), [value, error, onChange, currentField]);
-
 				const shouldRenderEmptyField = value === undefined && currentField.disabled
 				const shouldShow = useMemo(() => evaluateShow(currentField.show, {data: state?.data}), [currentField.show, state?.data]);
 
-				return shouldShow ? ((typeof type === "string" && componentMap[type]) ? (
-					<RegisteredField
-						key={`${name}_${i}`}
-						fieldDef={{ ...currentField, size: maxSize }}
-						value={value}
-						error={error}
-						colsInRow={colsInRow}
-						id={name}
+				if (!shouldShow) {
+					return null;
+				}
+
+				return (
+					<Controller
+						key={name}
+						control={methods.control}
 						name={name}
-						dispatch={dispatch}
-					>
-						{shouldRenderEmptyField ? <Blank /> : children}
-					</RegisteredField>
-				) : (
-					shouldRenderEmptyField ? <Blank /> : children
-				)) : null;
+						rules={{
+							required: fieldProps.required ? "This is a required field" : false,
+							validate: fieldProps.validators && ((value, data) => {
+								if (fieldProps.pairedFields) {
+									methods.pairedValidation([name, ...fieldProps.pairedFields]);
+								}
+
+								return createValidationChain(fieldProps.validators)(value, data);
+							})
+						}}
+						render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => {
+							const errorMessage = error ? error.message : false;
+
+							const children = currentField.copy ? (
+								<FieldWithWatcher
+									fieldDef={{ ...currentField, size: maxSize, name }}
+									name={name}
+									value={value}
+									error={errorMessage}
+									onChange={onChange}
+									ref={ref}
+									onBlur={onBlur}
+									key={`${name}_${i}`}
+									methods={methods}
+									component={Component}
+								/>
+							) : (
+								<Component
+									fieldDef={{ ...currentField, size: maxSize, name }}
+									name={name}
+									value={value}
+									error={errorMessage}
+									onChange={onChange}
+									ref={ref}
+									onBlur={onBlur}
+									key={`${name}_${i}`}
+									methods={methods}
+								/>
+							);
+
+							if (typeof type === "string" && componentMap[type]) {
+								return (
+									<RegisteredField
+										key={`${name}_${i}`}
+										fieldDef={{ ...currentField, size: maxSize }}
+										value={value}
+										error={errorMessage}
+										colsInRow={colsInRow}
+										id={name}
+										name={name}
+										dispatch={dispatch}
+									>
+										{shouldRenderEmptyField ? <Blank /> : children}
+									</RegisteredField>
+								);
+							}
+
+							return <>{shouldRenderEmptyField ? <Blank /> : children}</>
+						}}
+					/>
+				)
+
+				// return shouldShow && (
+				// 	typeof type === "string" && componentMap[type] ? (
+				// 		<RegisteredField
+				// 			key={`${name}_${i}`}
+				// 			fieldDef={{ ...currentField, size: maxSize }}
+				// 			value={value}
+				// 			error={error}
+				// 			colsInRow={colsInRow}
+				// 			id={name}
+				// 			name={name}
+				// 			dispatch={dispatch}
+				// 		>
+				// 			{shouldRenderEmptyField ? <Blank /> : children}
+				// 		</RegisteredField>
+				// 	) : (
+				// 		shouldRenderEmptyField ? <Blank /> : children
+				// 	)
+				// );
 			})}
 		</StyledCol>
 	);

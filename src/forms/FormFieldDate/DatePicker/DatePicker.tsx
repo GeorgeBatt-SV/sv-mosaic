@@ -13,15 +13,15 @@ import {
 } from "./DatePicker.styled";
 
 const DateFieldPicker = (props: DatePickerProps): ReactElement => {
-	const { error, fieldDef, onChange, value, onBlur } = props;
+	const { error, fieldDef, onChange, value, onBlur, blurOnAccept } = props;
 
 	const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-	const handleOpenState = async () => {
+	const handleOpenState = () => {
 		setIsPickerOpen(!isPickerOpen);
 
-		if (onBlur) {
-			await onBlur();
+		if (isPickerOpen && onBlur) {
+			onBlur();
 		}
 	};
 
@@ -37,10 +37,14 @@ const DateFieldPicker = (props: DatePickerProps): ReactElement => {
 		/>
 	);
 
+	// There must be a better way
+	const onAccept = React.useCallback(() => blurOnAccept ? setTimeout(() => onBlur(), 10) : undefined, [blurOnAccept, onBlur]);
+
 	return (
 		<LocalizationProvider dateAdapter={AdapterDateFns}>
 			<DatePickerWrapper data-testid="date-picker-test-id" error={!!error} isPickerOpen={isPickerOpen}>
 				<DatePicker
+					onAccept={onAccept}
 					renderInput={renderInput}
 					inputFormat="MM/dd/yyyy"
 					value={value}
