@@ -99,6 +99,8 @@ export const formActions: FormActionThunks = {
 			const field = getFieldFromExtra(extraArgs, name);
 			const { internalValue, value } = field.getResolvedValue(providedValue);
 
+			extraArgs.data[name] = value;
+
 			await dispatch({
 				type: "FIELD_ON_CHANGE",
 				name,
@@ -160,7 +162,7 @@ export const formActions: FormActionThunks = {
 	validateField({ name, validateLinkedFields }) {
 		return async function (dispatch, getState, extraArgs) {
 			const state = getState();
-			const { data } = state;
+			const { data } = extraArgs;
 			const { mounted, internalValidators } = extraArgs;
 			const field = getFieldFromExtra(extraArgs, name);
 
